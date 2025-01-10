@@ -12,8 +12,8 @@ Dependencies
     
     Windows 10
     AVIZO
-    Python
-    libraries: pandas, glob,logging, pathlib, tqdm
+    Matlab
+    
 
 **Installing**
 
@@ -31,4 +31,4 @@ Dependencies
 
   3. Damage Detection And Linking    
 
-     The input of the file "DamageDetectionAndLinking.py" should be modified before running to path to CSV files extracted from the previous modules.
+     The input of the file "DataCollection.m" should be modified before running to path to CSV files extracted from the previous modules.
