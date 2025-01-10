@@ -1,0 +1,1229 @@
+# Amira-Script-Object V3.0
+# bruchid quantification, peamust project
+# constructor is called when scro is instantiated
+# Developped by Ghassen Trigui - GEVES-SNES-ANAPHY-R&D 
+
+$this proc constructor {} {
+
+    remove Quantification
+
+    #define ports
+    #Entree utilisateur
+    $this newPortFloatTextN SeedNumber 1
+    $this SeedNumber setLabel "Nombre d'étages"
+    $this SeedNumber setValues 1
+    
+
+    # Processing button
+    $this newPortButtonList action 1
+    $this action setLabel 0 "start processing"
+    $this action setCmd 0 {$this computeDoIt}   
+}
+
+# destructor is called when scro is removed
+$this proc destructor {} {
+
+}
+
+$this proc computeDoIt {} {
+
+    viewer redraw
+
+    set data [$this data source] 
+
+    if {$data == ""} {return}
+
+    # Create a Visilog Quantification module
+    if {![exists Quantification]} {
+        create HxVisilog {Quantification}
+        # Quantification module could be hidden:
+        Quantification hideIcon
+        Quantification Execution setValue 0
+        # Make sure colormaps are available
+        Quantification createColormaps
+    }
+	
+	
+set hideNewModules 0
+create HxInteractiveThreshold "Interactive Thresholding"
+"Interactive Thresholding" setViewerMask 0
+"Interactive Thresholding" setIconPosition 160 10
+"Interactive Thresholding" setVar "CustomHelp" {HxInteractiveThreshold}
+set hideNewModules 0
+
+"Interactive Thresholding" data connect $data
+"Interactive Thresholding" mask disconnect
+"Interactive Thresholding" inputColorMap setDefaultColor 1 0.8 0.5
+"Interactive Thresholding" inputColorMap setDefaultAlpha 0.500000
+"Interactive Thresholding" inputColorMap setLocalRange 1
+"Interactive Thresholding" inputColorMap setLocalMinMax -0.163328 1.598627
+"Interactive Thresholding" inputColorMap enableAlpha 1
+"Interactive Thresholding" inputColorMap enableAlphaToggle 1
+"Interactive Thresholding" inputColorMap setAutoAdjustRangeMode 1
+"Interactive Thresholding" inputColorMap setColorbarMinMax -0.163328 1.59863
+"Interactive Thresholding" inputColorMap connect "grayScale.am"
+"Interactive Thresholding" fire
+"Interactive Thresholding" preview setValue 0 1
+"Interactive Thresholding" preview setToggleVisible 0 1
+"Interactive Thresholding" preview setValue 1 0
+"Interactive Thresholding" preview setToggleVisible 1 1
+"Interactive Thresholding" orientation setValue 0
+"Interactive Thresholding" sliceNumber setMinMax 0 391
+"Interactive Thresholding" sliceNumber setButtons 1
+"Interactive Thresholding" sliceNumber setEditButton 1
+"Interactive Thresholding" sliceNumber setIncrement 1
+"Interactive Thresholding" sliceNumber setValue 196
+"Interactive Thresholding" sliceNumber setSubMinMax 0 391
+"Interactive Thresholding" rendering setValue 1
+"Interactive Thresholding" intensityRange setMinMax -1.#INF 1.#INF
+# intensityRange setValues : 0.6 pour les données peamust 2014 (collection de référence)
+# "Interactive Thresholding" intensityRange setValues 0.36 20 
+"Interactive Thresholding" intensityRange setValues 0.32 20 
+"Interactive Thresholding" intensityRange setButtons 0
+"Interactive Thresholding" intensityRange setEditButton 1
+"Interactive Thresholding" intensityRange setIncrement 1.#INF
+"Interactive Thresholding" intensityRange setSubMinMax 0 0
+"Interactive Thresholding" colorMask setColor 0 0 0 1
+"Interactive Thresholding" applyTransformToResult 1
+"Interactive Thresholding" fire
+"Interactive Thresholding" setViewerMask 49150
+"Interactive Thresholding" setPickable 1
+
+set hideNewModules 0
+[ "Interactive Thresholding" doIt hit; "Interactive Thresholding" fire; "Interactive Thresholding" getResult
+ ] setLabel "raw.thresholded"
+"raw.thresholded" setIconPosition 20 46
+"raw.thresholded" master connect "Interactive Thresholding"
+"raw.thresholded" sharedColormap setDefaultColor 0.8 0.8 0.8
+"raw.thresholded" sharedColormap setDefaultAlpha 0.500000
+"raw.thresholded" sharedColormap setLocalRange 1
+"raw.thresholded" sharedColormap setLocalMinMax 1.000000 8.000000
+"raw.thresholded" sharedColormap enableAlpha 1
+"raw.thresholded" sharedColormap enableAlphaToggle 1
+"raw.thresholded" sharedColormap setAutoAdjustRangeMode 1
+"raw.thresholded" sharedColormap setColorbarMinMax 1 8
+"raw.thresholded" sharedColormap connect "labels.am"
+"raw.thresholded" ImageData disconnect
+"raw.thresholded" fire
+"raw.thresholded" primary setIndex 0 0
+"raw.thresholded" setTransform 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1
+"raw.thresholded" fire
+"raw.thresholded" setViewerMask 49151
+
+set hideNewModules 0
+create hole_fill2d "Fill Holes"
+"Fill Holes" setIconPosition 160 82
+"Fill Holes" setVar "CustomHelp" {hole_fill2d.html}
+"Fill Holes" interpretation setValue 1
+"Fill Holes" outputLocation setIndex 0 0
+"Fill Holes" inputImage connect "raw.thresholded"
+"Fill Holes" neighborhoodConnectivity setIndex 0 0
+"Fill Holes" applyTransformToResult 1
+"Fill Holes" fire
+"Fill Holes" setViewerMask 49151
+"Fill Holes" setPickable 1
+
+set hideNewModules 0
+[ if { [ "Fill Holes" getResult "ImgOut" ] == "" } { "Fill Holes" doIt hit ; "Fill Holes" fire } ; "Fill Holes" getResult "ImgOut" ] setLabel "raw.filled"
+"raw.filled" setIconPosition 20 82
+"raw.filled" master connect "Fill Holes"
+"raw.filled" sharedColormap setDefaultColor 0.8 0.8 0.8
+"raw.filled" sharedColormap setDefaultAlpha 0.500000
+"raw.filled" sharedColormap setLocalRange 1
+"raw.filled" sharedColormap setLocalMinMax 1.000000 8.000000
+"raw.filled" sharedColormap enableAlpha 1
+"raw.filled" sharedColormap enableAlphaToggle 1
+"raw.filled" sharedColormap setAutoAdjustRangeMode 1
+"raw.filled" sharedColormap setColorbarMinMax 1 8
+"raw.filled" sharedColormap connect "labels.am"
+"raw.filled" ImageData disconnect
+"raw.filled" fire
+"raw.filled" primary setIndex 0 0
+"raw.filled" setTransform 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1
+"raw.filled" fire
+"raw.filled" setViewerMask 49151
+
+set hideNewModules 1
+create HxDataDirectory "DataDirectory_grayScale.am"
+"DataDirectory_grayScale.am" setIconPosition 0 0
+"DataDirectory_grayScale.am" setNoRemoveAll 1
+"DataDirectory_grayScale.am" setInvisible 1
+"DataDirectory_grayScale.am" parentDir connect "Colormaps"
+"DataDirectory_grayScale.am" attachedData connect "grayScale.am"
+"DataDirectory_grayScale.am" fire
+"DataDirectory_grayScale.am" setViewerMask 49151
+"Colormaps" collapse
+
+set hideNewModules 1
+create HxDataDirectory "DataDirectory_labels.am"
+"DataDirectory_labels.am" setIconPosition 0 0
+"DataDirectory_labels.am" setNoRemoveAll 1
+"DataDirectory_labels.am" setInvisible 1
+"DataDirectory_labels.am" parentDir connect "Colormaps"
+"DataDirectory_labels.am" attachedData connect "labels.am"
+"DataDirectory_labels.am" fire
+"DataDirectory_labels.am" setViewerMask 49151
+"Colormaps" collapse
+
+set hideNewModules 1
+create HxDataDirectory "DataDirectory_raw.am"
+"DataDirectory_raw.am" setIconPosition 0 0
+"DataDirectory_raw.am" setInvisible 1
+"DataDirectory_raw.am" parentDir connect "Data"
+"DataDirectory_raw.am" attachedData connect $data
+"DataDirectory_raw.am" fire
+"DataDirectory_raw.am" setViewerMask 49151
+
+set hideNewModules 1
+
+set hideNewModules 1
+
+set hideNewModules 1
+create HxDataDirectory "DataDirectory_raw.thresholded"
+"DataDirectory_raw.thresholded" setIconPosition 0 0
+"DataDirectory_raw.thresholded" setInvisible 1
+"DataDirectory_raw.thresholded" parentDir connect "Data"
+"DataDirectory_raw.thresholded" attachedData connect "raw.thresholded"
+"DataDirectory_raw.thresholded" fire
+"DataDirectory_raw.thresholded" setViewerMask 49151
+
+set hideNewModules 0
+create HxInteractiveThreshold "Interactive Thresholding 2"
+"Interactive Thresholding 2" setViewerMask 0
+"Interactive Thresholding 2" setIconPosition 160 118
+"Interactive Thresholding 2" setVar "CustomHelp" {HxInteractiveThreshold}
+set hideNewModules 0
+
+"Interactive Thresholding 2" data connect $data
+"Interactive Thresholding 2" mask disconnect
+"Interactive Thresholding 2" inputColorMap setDefaultColor 1 0.8 0.5
+"Interactive Thresholding 2" inputColorMap setDefaultAlpha 0.500000
+"Interactive Thresholding 2" inputColorMap setLocalRange 1
+"Interactive Thresholding 2" inputColorMap setLocalMinMax -0.163328 1.598627
+"Interactive Thresholding 2" inputColorMap enableAlpha 1
+"Interactive Thresholding 2" inputColorMap enableAlphaToggle 1
+"Interactive Thresholding 2" inputColorMap setAutoAdjustRangeMode 1
+"Interactive Thresholding 2" inputColorMap setColorbarMinMax -0.163328 1.59863
+"Interactive Thresholding 2" inputColorMap connect "grayScale.am"
+"Interactive Thresholding 2" fire
+"Interactive Thresholding 2" preview setValue 0 1
+"Interactive Thresholding 2" preview setToggleVisible 0 1
+"Interactive Thresholding 2" preview setValue 1 0
+"Interactive Thresholding 2" preview setToggleVisible 1 1
+"Interactive Thresholding 2" orientation setValue 0
+"Interactive Thresholding 2" sliceNumber setMinMax 0 391
+"Interactive Thresholding 2" sliceNumber setButtons 1
+"Interactive Thresholding 2" sliceNumber setEditButton 1
+"Interactive Thresholding 2" sliceNumber setIncrement 1
+"Interactive Thresholding 2" sliceNumber setValue 196
+"Interactive Thresholding 2" sliceNumber setSubMinMax 0 391
+"Interactive Thresholding 2" rendering setValue 1
+"Interactive Thresholding 2" intensityRange setMinMax -1.#INF 1.#INF
+"Interactive Thresholding 2" intensityRange setValues 0.32 20
+"Interactive Thresholding 2" intensityRange setButtons 0
+"Interactive Thresholding 2" intensityRange setEditButton 1
+"Interactive Thresholding 2" intensityRange setIncrement 1.#INF
+"Interactive Thresholding 2" intensityRange setSubMinMax 0 0
+"Interactive Thresholding 2" colorMask setColor 0 0 0 1
+"Interactive Thresholding 2" applyTransformToResult 1
+"Interactive Thresholding 2" fire
+"Interactive Thresholding 2" setViewerMask 49150
+"Interactive Thresholding 2" setPickable 1
+
+set hideNewModules 0
+
+[ "Interactive Thresholding 2" doIt hit; "Interactive Thresholding 2" fire; "Interactive Thresholding 2" getResult
+ ] setLabel "raw2.thresholded"
+
+
+
+"raw2.thresholded" setIconPosition 20 118
+"raw2.thresholded" master connect "Interactive Thresholding 2"
+"raw2.thresholded" sharedColormap setDefaultColor 0.8 0.8 0.8
+"raw2.thresholded" sharedColormap setDefaultAlpha 0.500000
+"raw2.thresholded" sharedColormap setLocalRange 1
+"raw2.thresholded" sharedColormap setLocalMinMax 1.000000 8.000000
+"raw2.thresholded" sharedColormap enableAlpha 1
+"raw2.thresholded" sharedColormap enableAlphaToggle 1
+"raw2.thresholded" sharedColormap setAutoAdjustRangeMode 1
+"raw2.thresholded" sharedColormap setColorbarMinMax 1 8
+"raw2.thresholded" sharedColormap connect "labels.am"
+"raw2.thresholded" ImageData disconnect
+"raw2.thresholded" fire
+"raw2.thresholded" primary setIndex 0 0
+"raw2.thresholded" setTransform 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1
+"raw2.thresholded" fire
+"raw2.thresholded" setViewerMask 49151
+
+
+"raw2.thresholded" swapDims 1 2 0
+
+
+set hideNewModules 0
+create hole_fill2d "Fill Holes 2"
+"Fill Holes 2" setIconPosition 160 154
+"Fill Holes 2" setVar "CustomHelp" {hole_fill2d.html}
+"Fill Holes 2" interpretation setValue 1
+"Fill Holes 2" outputLocation setIndex 0 0
+"Fill Holes 2" inputImage connect "raw2.thresholded"
+"Fill Holes 2" neighborhoodConnectivity setIndex 0 0
+"Fill Holes 2" applyTransformToResult 1
+"Fill Holes 2" fire
+"Fill Holes 2" setViewerMask 49151
+"Fill Holes 2" setPickable 1
+
+set hideNewModules 0
+
+[ if { [ "Fill Holes 2" getResult "ImgOut" ] == "" } { "Fill Holes 2" doIt hit ; "Fill Holes 2" fire } ; "Fill Holes 2" getResult "ImgOut" ] setLabel "raw2.filled"
+
+
+"raw2.filled" setIconPosition 20 154
+"raw2.filled" master connect "Fill Holes 2"
+"raw2.filled" sharedColormap setDefaultColor 0.8 0.8 0.8
+"raw2.filled" sharedColormap setDefaultAlpha 0.500000
+"raw2.filled" sharedColormap setLocalRange 1
+"raw2.filled" sharedColormap setLocalMinMax 1.000000 8.000000
+"raw2.filled" sharedColormap enableAlpha 1
+"raw2.filled" sharedColormap enableAlphaToggle 1
+"raw2.filled" sharedColormap setAutoAdjustRangeMode 1
+"raw2.filled" sharedColormap setColorbarMinMax 1 8
+"raw2.filled" sharedColormap connect "labels.am"
+"raw2.filled" ImageData disconnect
+"raw2.filled" fire
+"raw2.filled" primary setIndex 0 0
+"raw2.filled" setTransform 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1
+"raw2.filled" fire
+"raw2.filled" setViewerMask 49151
+
+
+"raw2.filled" swapDims 2 0 1
+
+
+
+set hideNewModules 0
+create HxInteractiveThreshold "Interactive Thresholding 3"
+"Interactive Thresholding 3" setViewerMask 0
+"Interactive Thresholding 3" setIconPosition 160 190
+"Interactive Thresholding 3" setVar "CustomHelp" {HxInteractiveThreshold}
+set hideNewModules 0
+
+"Interactive Thresholding 3" data connect $data
+"Interactive Thresholding 3" mask disconnect
+"Interactive Thresholding 3" inputColorMap setDefaultColor 1 0.8 0.5
+"Interactive Thresholding 3" inputColorMap setDefaultAlpha 0.500000
+"Interactive Thresholding 3" inputColorMap setLocalRange 1
+"Interactive Thresholding 3" inputColorMap setLocalMinMax -0.163328 1.598627
+"Interactive Thresholding 3" inputColorMap enableAlpha 1
+"Interactive Thresholding 3" inputColorMap enableAlphaToggle 1
+"Interactive Thresholding 3" inputColorMap setAutoAdjustRangeMode 1
+"Interactive Thresholding 3" inputColorMap setColorbarMinMax -0.163328 1.59863
+"Interactive Thresholding 3" inputColorMap connect "grayScale.am"
+"Interactive Thresholding 3" fire
+"Interactive Thresholding 3" preview setValue 0 1
+"Interactive Thresholding 3" preview setToggleVisible 0 1
+"Interactive Thresholding 3" preview setValue 1 0
+"Interactive Thresholding 3" preview setToggleVisible 1 1
+"Interactive Thresholding 3" orientation setValue 0
+"Interactive Thresholding 3" sliceNumber setMinMax 0 391
+"Interactive Thresholding 3" sliceNumber setButtons 1
+"Interactive Thresholding 3" sliceNumber setEditButton 1
+"Interactive Thresholding 3" sliceNumber setIncrement 1
+"Interactive Thresholding 3" sliceNumber setValue 196
+"Interactive Thresholding 3" sliceNumber setSubMinMax 0 391
+"Interactive Thresholding 3" rendering setValue 1
+"Interactive Thresholding 3" intensityRange setMinMax -1.#INF 1.#INF
+"Interactive Thresholding 3" intensityRange setValues 0.32 20
+"Interactive Thresholding 3" intensityRange setButtons 0
+"Interactive Thresholding 3" intensityRange setEditButton 1
+"Interactive Thresholding 3" intensityRange setIncrement 1.#INF
+"Interactive Thresholding 3" intensityRange setSubMinMax 0 0
+"Interactive Thresholding 3" colorMask setColor 0 0 0 1
+"Interactive Thresholding 3" applyTransformToResult 1
+"Interactive Thresholding 3" fire
+"Interactive Thresholding 3" setViewerMask 49150
+"Interactive Thresholding 3" setPickable 1
+
+set hideNewModules 0
+
+[ "Interactive Thresholding 3" doIt hit; "Interactive Thresholding 3" fire; "Interactive Thresholding 3" getResult
+ ] setLabel "raw3.thresholded"
+
+ 
+ 
+"raw3.thresholded" setIconPosition 20 190
+"raw3.thresholded" master connect "Interactive Thresholding 3"
+"raw3.thresholded" sharedColormap setDefaultColor 0.8 0.8 0.8
+"raw3.thresholded" sharedColormap setDefaultAlpha 0.500000
+"raw3.thresholded" sharedColormap setLocalRange 1
+"raw3.thresholded" sharedColormap setLocalMinMax 1.000000 8.000000
+"raw3.thresholded" sharedColormap enableAlpha 1
+"raw3.thresholded" sharedColormap enableAlphaToggle 1
+"raw3.thresholded" sharedColormap setAutoAdjustRangeMode 1
+"raw3.thresholded" sharedColormap setColorbarMinMax 1 8
+"raw3.thresholded" sharedColormap connect "labels.am"
+"raw3.thresholded" ImageData disconnect
+"raw3.thresholded" fire
+"raw3.thresholded" primary setIndex 0 0
+"raw3.thresholded" setTransform 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1
+"raw3.thresholded" fire
+"raw3.thresholded" setViewerMask 49151
+
+
+"raw3.thresholded" swapDims 0 2 1
+
+
+
+set hideNewModules 0
+create hole_fill2d "Fill Holes 3"
+"Fill Holes 3" setIconPosition 160 226
+"Fill Holes 3" setVar "CustomHelp" {hole_fill2d.html}
+"Fill Holes 3" interpretation setValue 1
+"Fill Holes 3" outputLocation setIndex 0 0
+"Fill Holes 3" inputImage connect "raw3.thresholded"
+"Fill Holes 3" neighborhoodConnectivity setIndex 0 0
+"Fill Holes 3" applyTransformToResult 1
+"Fill Holes 3" fire
+"Fill Holes 3" setViewerMask 49151
+"Fill Holes 3" setPickable 1
+
+set hideNewModules 0
+
+[ if { [ "Fill Holes 3" getResult "ImgOut" ] == "" } { "Fill Holes 3" doIt hit ; "Fill Holes 3" fire } ; "Fill Holes 3" getResult "ImgOut" ] setLabel "raw3.filled"
+
+
+"raw3.filled" setIconPosition 20 226
+"raw3.filled" master connect "Fill Holes 3"
+"raw3.filled" sharedColormap setDefaultColor 0.8 0.8 0.8
+"raw3.filled" sharedColormap setDefaultAlpha 0.500000
+"raw3.filled" sharedColormap setLocalRange 1
+"raw3.filled" sharedColormap setLocalMinMax 1.000000 8.000000
+"raw3.filled" sharedColormap enableAlpha 1
+"raw3.filled" sharedColormap enableAlphaToggle 1
+"raw3.filled" sharedColormap setAutoAdjustRangeMode 1
+"raw3.filled" sharedColormap setColorbarMinMax 1 8
+"raw3.filled" sharedColormap connect "labels.am"
+"raw3.filled" ImageData disconnect
+"raw3.filled" fire
+"raw3.filled" primary setIndex 0 0
+"raw3.filled" setTransform 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1
+"raw3.filled" fire
+"raw3.filled" setViewerMask 49151
+
+
+"raw3.filled" swapDims 0 2 1
+
+
+set hideNewModules 0
+create addimage "Add Image"
+"Add Image" setIconPosition 160 262
+"Add Image" setVar "CustomHelp" {addimage.html}
+"Add Image" interpretation setValue 0
+"Add Image" outputLocation setIndex 0 0
+"Add Image" inputImage1 connect "raw.filled"
+"Add Image" inputImage2 connect "raw2.filled"
+"Add Image" applyTransformToResult 1
+"Add Image" fire
+"Add Image" setViewerMask 49151
+"Add Image" setPickable 1
+
+set hideNewModules 0
+[ if { [ "Add Image" getResult "ImgOut" ] == "" } { "Add Image" doIt hit ; "Add Image" fire } ; "Add Image" getResult "ImgOut" ] setLabel "raw.add"
+"raw.add" setIconPosition 20 262
+"raw.add" master connect "Add Image"
+"raw.add" sharedColormap setDefaultColor 0.8 0.8 0.8
+"raw.add" sharedColormap setDefaultAlpha 0.500000
+"raw.add" sharedColormap setLocalRange 1
+"raw.add" sharedColormap setLocalMinMax 0.000000 1.000000
+"raw.add" sharedColormap enableAlpha 1
+"raw.add" sharedColormap enableAlphaToggle 1
+"raw.add" sharedColormap setAutoAdjustRangeMode 1
+"raw.add" sharedColormap setColorbarMinMax 0 2
+"raw.add" sharedColormap disconnect
+"raw.add" fire
+"raw.add" setTransform 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1
+"raw.add" fire
+"raw.add" setViewerMask 49151
+
+set hideNewModules 0
+create addimage "Add Image 2"
+"Add Image 2" setIconPosition 160 298
+"Add Image 2" setVar "CustomHelp" {addimage.html}
+"Add Image 2" interpretation setValue 0
+"Add Image 2" outputLocation setIndex 0 0
+"Add Image 2" inputImage1 connect "raw.add"
+"Add Image 2" inputImage2 connect "raw3.filled"
+"Add Image 2" applyTransformToResult 1
+"Add Image 2" fire
+"Add Image 2" setViewerMask 49151
+"Add Image 2" setPickable 1
+
+set hideNewModules 0
+[ if { [ "Add Image 2" getResult "ImgOut" ] == "" } { "Add Image 2" doIt hit ; "Add Image 2" fire } ; "Add Image 2" getResult "ImgOut" ] setLabel "raw2.add"
+"raw2.add" setIconPosition 20 298
+"raw2.add" master connect "Add Image 2"
+"raw2.add" sharedColormap setDefaultColor 0.8 0.8 0.8
+"raw2.add" sharedColormap setDefaultAlpha 0.500000
+"raw2.add" sharedColormap setLocalRange 1
+"raw2.add" sharedColormap setLocalMinMax 0.000000 1.000000
+"raw2.add" sharedColormap enableAlpha 1
+"raw2.add" sharedColormap enableAlphaToggle 1
+"raw2.add" sharedColormap setAutoAdjustRangeMode 1
+"raw2.add" sharedColormap setColorbarMinMax 0 3
+"raw2.add" sharedColormap disconnect
+"raw2.add" fire
+"raw2.add" setTransform 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1
+"raw2.add" fire
+"raw2.add" setViewerMask 49151
+
+set hideNewModules 0
+create HxInteractiveThreshold "Interactive Thresholding 4"
+"Interactive Thresholding 4" setViewerMask 0
+"Interactive Thresholding 4" setIconPosition 160 334
+"Interactive Thresholding 4" setVar "CustomHelp" {HxInteractiveThreshold}
+set hideNewModules 0
+
+"Interactive Thresholding 4" data connect "raw2.add"
+"Interactive Thresholding 4" mask disconnect
+"Interactive Thresholding 4" inputColorMap setDefaultColor 1 0.8 0.5
+"Interactive Thresholding 4" inputColorMap setDefaultAlpha 0.500000
+"Interactive Thresholding 4" inputColorMap setLocalRange 1
+"Interactive Thresholding 4" inputColorMap setLocalMinMax 0.000000 3.000000
+"Interactive Thresholding 4" inputColorMap enableAlpha 1
+"Interactive Thresholding 4" inputColorMap enableAlphaToggle 1
+"Interactive Thresholding 4" inputColorMap setAutoAdjustRangeMode 1
+"Interactive Thresholding 4" inputColorMap setColorbarMinMax 0 3
+"Interactive Thresholding 4" inputColorMap connect "grayScale.am"
+"Interactive Thresholding 4" fire
+"Interactive Thresholding 4" preview setValue 0 1
+"Interactive Thresholding 4" preview setToggleVisible 0 1
+"Interactive Thresholding 4" preview setValue 1 0
+"Interactive Thresholding 4" preview setToggleVisible 1 1
+"Interactive Thresholding 4" orientation setValue 0
+"Interactive Thresholding 4" sliceNumber setMinMax 0 391
+"Interactive Thresholding 4" sliceNumber setButtons 1
+"Interactive Thresholding 4" sliceNumber setEditButton 1
+"Interactive Thresholding 4" sliceNumber setIncrement 1
+"Interactive Thresholding 4" sliceNumber setValue 196
+"Interactive Thresholding 4" sliceNumber setSubMinMax 0 391
+"Interactive Thresholding 4" rendering setValue 1
+"Interactive Thresholding 4" intensityRange setMinMax -32768 32767
+"Interactive Thresholding 4" intensityRange setValues 1 3
+"Interactive Thresholding 4" intensityRange setButtons 0
+"Interactive Thresholding 4" intensityRange setEditButton 1
+"Interactive Thresholding 4" intensityRange setIncrement 4369
+"Interactive Thresholding 4" intensityRange setSubMinMax 0 0
+"Interactive Thresholding 4" colorMask setColor 0 0 0 1
+"Interactive Thresholding 4" applyTransformToResult 1
+"Interactive Thresholding 4" fire
+"Interactive Thresholding 4" setViewerMask 49150
+"Interactive Thresholding 4" setPickable 1
+
+set hideNewModules 0
+[ "Interactive Thresholding 4" doIt hit; "Interactive Thresholding 4" fire; "Interactive Thresholding 4" getResult
+ ] setLabel "raw4.thresholded"
+"raw4.thresholded" setIconPosition 20 334
+"raw4.thresholded" master connect "Interactive Thresholding 4"
+"raw4.thresholded" sharedColormap setDefaultColor 0.8 0.8 0.8
+"raw4.thresholded" sharedColormap setDefaultAlpha 0.500000
+"raw4.thresholded" sharedColormap setLocalRange 1
+"raw4.thresholded" sharedColormap setLocalMinMax 1.000000 8.000000
+"raw4.thresholded" sharedColormap enableAlpha 1
+"raw4.thresholded" sharedColormap enableAlphaToggle 1
+"raw4.thresholded" sharedColormap setAutoAdjustRangeMode 1
+"raw4.thresholded" sharedColormap setColorbarMinMax 1 8
+"raw4.thresholded" sharedColormap connect "labels.am"
+"raw4.thresholded" ImageData disconnect
+"raw4.thresholded" fire
+"raw4.thresholded" primary setIndex 0 0
+"raw4.thresholded" setTransform 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1
+"raw4.thresholded" fire
+"raw4.thresholded" setViewerMask 49151
+
+set hideNewModules 0
+create binseparate "Separate Objects"
+"Separate Objects" setIconPosition 160 370
+"Separate Objects" setVar "CustomHelp" {binseparate}
+"Separate Objects" Method setState {type Chamfer - Conservative}
+"Separate Objects" interpretation setValue 0
+"Separate Objects" outputLocation setIndex 0 0
+"Separate Objects" neighborhood setValue 2
+"Separate Objects" inputBinaryImage connect "raw4.thresholded"
+"Separate Objects" markerExtent setMinMax 0 0 2147483648
+"Separate Objects" markerExtent setValue 0 4
+"Separate Objects" outputType setIndex 0 2
+"Separate Objects" algorithmMode setIndex 0 0
+"Separate Objects" applyTransformToResult 1
+"Separate Objects" fire
+"Separate Objects" setViewerMask 49151
+"Separate Objects" setPickable 1
+
+set hideNewModules 0
+[ if { [ "Separate Objects" getResult "ImgOutBinOrLab" ] == "" } { "Separate Objects" doIt hit ; "Separate Objects" fire } ; "Separate Objects" getResult "ImgOutBinOrLab" ] setLabel "raw4.separate"
+"raw4.separate" setIconPosition 20 370
+"raw4.separate" master connect "Separate Objects"
+"raw4.separate" sharedColormap setDefaultColor 0.8 0.8 0.8
+"raw4.separate" sharedColormap setDefaultAlpha 0.500000
+"raw4.separate" sharedColormap setLocalRange 1
+"raw4.separate" sharedColormap setLocalMinMax 1.000000 8.000000
+"raw4.separate" sharedColormap enableAlpha 1
+"raw4.separate" sharedColormap enableAlphaToggle 1
+"raw4.separate" sharedColormap setAutoAdjustRangeMode 1
+"raw4.separate" sharedColormap setColorbarMinMax 1 8
+"raw4.separate" sharedColormap connect "labels.am"
+"raw4.separate" ImageData disconnect
+"raw4.separate" fire
+"raw4.separate" primary setIndex 0 0
+"raw4.separate" setTransform 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1
+"raw4.separate" fire
+"raw4.separate" setViewerMask 49151
+
+
+
+
+
+
+set hideNewModules 0
+create removalsmallspots "Remove Small Spots 2"
+"Remove Small Spots 2" setIconPosition 626 384
+"Remove Small Spots 2" setVar "CustomHelp" {removalsmallspots.html}
+"Remove Small Spots 2" interpretation setValue 0
+"Remove Small Spots 2" outputLocation setIndex 0 0
+"Remove Small Spots 2" inputImage connect "raw4.separate"
+"Remove Small Spots 2" size setMinMax 0 0 3.40282346638529e+038
+"Remove Small Spots 2" size setValue 0 100000
+"Remove Small Spots 2" applyTransformToResult 1
+"Remove Small Spots 2" fire
+"Remove Small Spots 2" setViewerMask 49151
+"Remove Small Spots 2" setPickable 1
+
+set hideNewModules 0
+[ if { [ "Remove Small Spots 2" getResult "ImgOut" ] == "" } { "Remove Small Spots 2" doIt hit ; "Remove Small Spots 2" fire } ; "Remove Small Spots 2" getResult "ImgOut" ] setLabel "raw4.filtered.separate"
+"raw4.filtered.separate" setIconPosition 647 417
+"raw4.filtered.separate" master connect "Remove Small Spots 2"
+"raw4.filtered.separate" sharedColormap setDefaultColor 0.8 0.8 0.8
+"raw4.filtered.separate" sharedColormap setDefaultAlpha 0.500000
+"raw4.filtered.separate" sharedColormap setLocalRange 1
+"raw4.filtered.separate" sharedColormap setLocalMinMax 1.000000 8.000000
+"raw4.filtered.separate" sharedColormap enableAlpha 1
+"raw4.filtered.separate" sharedColormap enableAlphaToggle 1
+"raw4.filtered.separate" sharedColormap setAutoAdjustRangeMode 1
+"raw4.filtered.separate" sharedColormap setColorbarMinMax 1 8
+"raw4.filtered.separate" sharedColormap connect "labels.am"
+"raw4.filtered.separate" ImageData disconnect
+"raw4.filtered.separate" fire
+"raw4.filtered.separate" primary setIndex 0 0
+"raw4.filtered.separate" setTransform 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1
+"raw4.filtered.separate" fire
+"raw4.filtered.separate" setViewerMask 49151
+"raw4.filtered.separate" select
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+set hideNewModules 0
+create mask "Mask"
+"Mask" setIconPosition 160 406
+"Mask" setVar "CustomHelp" {mask.html}
+"Mask" interpretation setValue 0
+"Mask" outputLocation setIndex 0 0
+"Mask" inputImage connect "raw4.filtered.separate"
+"Mask" inputBinaryImage connect "raw.thresholded"
+"Mask" applyTransformToResult 1
+"Mask" fire
+"Mask" setViewerMask 49151
+"Mask" setPickable 1
+
+set hideNewModules 0
+[ if { [ "Mask" getResult "ImgOut" ] == "" } { "Mask" doIt hit ; "Mask" fire } ; "Mask" getResult "ImgOut" ] setLabel "raw4.masked"
+"raw4.masked" setIconPosition 20 406
+"raw4.masked" master connect "Mask"
+"raw4.masked" sharedColormap setDefaultColor 0.8 0.8 0.8
+"raw4.masked" sharedColormap setDefaultAlpha 0.500000
+"raw4.masked" sharedColormap setLocalRange 1
+"raw4.masked" sharedColormap setLocalMinMax 1.000000 8.000000
+"raw4.masked" sharedColormap enableAlpha 1
+"raw4.masked" sharedColormap enableAlphaToggle 1
+"raw4.masked" sharedColormap setAutoAdjustRangeMode 1
+"raw4.masked" sharedColormap setColorbarMinMax 1 8
+"raw4.masked" sharedColormap connect "labels.am"
+"raw4.masked" ImageData disconnect
+"raw4.masked" fire
+"raw4.masked" primary setIndex 0 0
+"raw4.masked" setTransform 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1
+"raw4.masked" fire
+"raw4.masked" setViewerMask 49151
+
+set hideNewModules 0
+create HxInteractiveThreshold "Interactive Thresholding 5"
+"Interactive Thresholding 5" setViewerMask 0
+"Interactive Thresholding 5" setIconPosition 160 442
+"Interactive Thresholding 5" setVar "CustomHelp" {HxInteractiveThreshold}
+set hideNewModules 0
+
+"Interactive Thresholding 5" data connect "raw4.masked"
+"Interactive Thresholding 5" mask disconnect
+"Interactive Thresholding 5" inputColorMap setDefaultColor 1 0.8 0.5
+"Interactive Thresholding 5" inputColorMap setDefaultAlpha 0.500000
+"Interactive Thresholding 5" inputColorMap setLocalRange 1
+"Interactive Thresholding 5" inputColorMap setLocalMinMax 1.000000 8.000000
+"Interactive Thresholding 5" inputColorMap enableAlpha 1
+"Interactive Thresholding 5" inputColorMap enableAlphaToggle 1
+"Interactive Thresholding 5" inputColorMap setAutoAdjustRangeMode 1
+"Interactive Thresholding 5" inputColorMap setColorbarMinMax 1 8
+"Interactive Thresholding 5" inputColorMap connect "labels.am"
+"Interactive Thresholding 5" fire
+"Interactive Thresholding 5" preview setValue 0 1
+"Interactive Thresholding 5" preview setToggleVisible 0 1
+"Interactive Thresholding 5" preview setValue 1 0
+"Interactive Thresholding 5" preview setToggleVisible 1 1
+"Interactive Thresholding 5" orientation setValue 0
+"Interactive Thresholding 5" sliceNumber setMinMax 0 391
+"Interactive Thresholding 5" sliceNumber setButtons 1
+"Interactive Thresholding 5" sliceNumber setEditButton 1
+"Interactive Thresholding 5" sliceNumber setIncrement 1
+"Interactive Thresholding 5" sliceNumber setValue 196
+"Interactive Thresholding 5" sliceNumber setSubMinMax 0 391
+"Interactive Thresholding 5" rendering setValue 1
+"Interactive Thresholding 5" intensityRange setMinMax 0 65535
+"Interactive Thresholding 5" intensityRange setValues 1 1000
+"Interactive Thresholding 5" intensityRange setButtons 0
+"Interactive Thresholding 5" intensityRange setEditButton 1
+"Interactive Thresholding 5" intensityRange setIncrement 4369
+"Interactive Thresholding 5" intensityRange setSubMinMax 0 0
+"Interactive Thresholding 5" colorMask setColor 0 0 0 1
+"Interactive Thresholding 5" applyTransformToResult 1
+"Interactive Thresholding 5" fire
+"Interactive Thresholding 5" setViewerMask 49150
+"Interactive Thresholding 5" setPickable 1
+
+set hideNewModules 0
+[ "Interactive Thresholding 5" doIt hit; "Interactive Thresholding 5" fire; "Interactive Thresholding 5" getResult
+ ] setLabel "raw5.thresholded"
+"raw5.thresholded" setIconPosition 20 442
+"raw5.thresholded" master connect "Interactive Thresholding 5"
+"raw5.thresholded" sharedColormap setDefaultColor 0.8 0.8 0.8
+"raw5.thresholded" sharedColormap setDefaultAlpha 0.500000
+"raw5.thresholded" sharedColormap setLocalRange 1
+"raw5.thresholded" sharedColormap setLocalMinMax 1.000000 8.000000
+"raw5.thresholded" sharedColormap enableAlpha 1
+"raw5.thresholded" sharedColormap enableAlphaToggle 1
+"raw5.thresholded" sharedColormap setAutoAdjustRangeMode 1
+"raw5.thresholded" sharedColormap setColorbarMinMax 1 8
+"raw5.thresholded" sharedColormap connect "labels.am"
+"raw5.thresholded" ImageData disconnect
+"raw5.thresholded" fire
+"raw5.thresholded" primary setIndex 0 0
+"raw5.thresholded" setTransform 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1
+"raw5.thresholded" fire
+"raw5.thresholded" setViewerMask 49151
+"raw5.thresholded" select
+
+
+
+
+
+set hideNewModules 0
+create HxCalculus "Calculus MATLAB 1"
+"Calculus MATLAB 1" setIconPosition 160 478
+"Calculus MATLAB 1" setVar "CustomHelp" {HxCalculus}
+"Calculus MATLAB 1" A connect "raw5.thresholded"
+"Calculus MATLAB 1" A1 disconnect
+"Calculus MATLAB 1" fire
+"Calculus MATLAB 1" Execute setState {item 2 1 }
+"Calculus MATLAB 1" MatlabBuffer setState {L = length(A(1,1,:));
+
+for i=1:round(L/2)
+convex1(:,:,i) = +(bwconvhull(A(:,:,i),'objects'));
+end
+clear L i A}
+"Calculus MATLAB 1" Options setValue 0 0
+"Calculus MATLAB 1" Options setToggleVisible 0 1
+"Calculus MATLAB 1" Options setValue 1 0
+"Calculus MATLAB 1" Options setToggleVisible 1 1
+"Calculus MATLAB 1" applyTransformToResult 1
+"Calculus MATLAB 1" fire
+"Calculus MATLAB 1" setViewerMask 49151
+"Calculus MATLAB 1" setPickable 1
+"Calculus MATLAB 1" Apply hit
+"Calculus MATLAB 1" fire
+
+
+set hideNewModules 0
+create HxCalculus "Calculus MATLAB 2"
+"Calculus MATLAB 2" setIconPosition 160 514
+"Calculus MATLAB 2" setVar "CustomHelp" {HxCalculus}
+"Calculus MATLAB 2" A connect "raw5.thresholded"
+"Calculus MATLAB 2" A1 disconnect
+"Calculus MATLAB 2" fire
+"Calculus MATLAB 2" Execute setState {item 2 1 }
+"Calculus MATLAB 2" MatlabBuffer setState {L = length(A(1,1,:));
+
+for i=round(L/2)+1:L
+convex2(:,:,i-(round(L/2))) = +(bwconvhull(A(:,:,i),'objects'));
+end
+clear L i A}
+"Calculus MATLAB 2" Options setValue 0 0
+"Calculus MATLAB 2" Options setToggleVisible 0 1
+"Calculus MATLAB 2" Options setValue 1 0
+"Calculus MATLAB 2" Options setToggleVisible 1 1
+"Calculus MATLAB 2" applyTransformToResult 1
+"Calculus MATLAB 2" fire
+"Calculus MATLAB 2" setViewerMask 49151
+"Calculus MATLAB 2" setPickable 1
+"Calculus MATLAB 2" Apply hit
+"Calculus MATLAB 2" fire
+
+
+
+
+set hideNewModules 0
+create seqconcat "Append"
+"Append" setIconPosition 160 545
+"Append" setVar "CustomHelp" {seqconcat.html}
+"Append" interpretation setValue 1
+"Append" outputLocation setIndex 0 0
+"Append" inputImage connect "convex1"
+"Append" inputImage2 connect "convex2"
+"Append" applyTransformToResult 1
+"Append" fire
+"Append" setViewerMask 49151
+"Append" setPickable 1
+
+set hideNewModules 0
+[ if { [ "Append" getResult "SeqOut" ] == "" } { "Append" doIt hit ; "Append" fire } ; "Append" getResult "SeqOut" ] setLabel "convex1.append"
+"convex1.append" setIconPosition 16 581
+"convex1.append" master connect "Append"
+"convex1.append" sharedColormap setDefaultColor 0.8 0.8 0.8
+"convex1.append" sharedColormap setDefaultAlpha 0.500000
+"convex1.append" sharedColormap setLocalRange 1
+"convex1.append" sharedColormap setLocalMinMax 0.000000 1.000000
+"convex1.append" sharedColormap enableAlpha 1
+"convex1.append" sharedColormap enableAlphaToggle 1
+"convex1.append" sharedColormap setAutoAdjustRangeMode 1
+"convex1.append" sharedColormap setColorbarMinMax 0 1
+"convex1.append" sharedColormap disconnect
+"convex1.append" fire
+"convex1.append" setTransform 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1
+"convex1.append" fire
+"convex1.append" setViewerMask 49151
+
+set hideNewModules 0
+create HxInteractiveThreshold "Interactive Thresholding 6"
+"Interactive Thresholding 6" setViewerMask 0
+"Interactive Thresholding 6" setIconPosition 160 581
+"Interactive Thresholding 6" setVar "CustomHelp" {HxInteractiveThreshold}
+set hideNewModules 0
+
+"Interactive Thresholding 6" data connect "convex1.append"
+"Interactive Thresholding 6" mask disconnect
+"Interactive Thresholding 6" inputColorMap setDefaultColor 1 0.8 0.5
+"Interactive Thresholding 6" inputColorMap setDefaultAlpha 0.500000
+"Interactive Thresholding 6" inputColorMap setLocalRange 1
+"Interactive Thresholding 6" inputColorMap setLocalMinMax 0.000000 1.000000
+"Interactive Thresholding 6" inputColorMap enableAlpha 1
+"Interactive Thresholding 6" inputColorMap enableAlphaToggle 1
+"Interactive Thresholding 6" inputColorMap setAutoAdjustRangeMode 1
+"Interactive Thresholding 6" inputColorMap setColorbarMinMax 0 1
+"Interactive Thresholding 6" inputColorMap connect "grayScale.am"
+"Interactive Thresholding 6" fire
+"Interactive Thresholding 6" preview setValue 0 1
+"Interactive Thresholding 6" preview setToggleVisible 0 1
+"Interactive Thresholding 6" preview setValue 1 0
+"Interactive Thresholding 6" preview setToggleVisible 1 1
+"Interactive Thresholding 6" orientation setValue 0
+"Interactive Thresholding 6" sliceNumber setMinMax 0 391
+"Interactive Thresholding 6" sliceNumber setButtons 1
+"Interactive Thresholding 6" sliceNumber setEditButton 1
+"Interactive Thresholding 6" sliceNumber setIncrement 1
+"Interactive Thresholding 6" sliceNumber setValue 196
+"Interactive Thresholding 6" sliceNumber setSubMinMax 0 391
+"Interactive Thresholding 6" rendering setValue 1
+"Interactive Thresholding 6" intensityRange setMinMax -1.#INF 1.#INF
+"Interactive Thresholding 6" intensityRange setValues 1 1
+"Interactive Thresholding 6" intensityRange setButtons 0
+"Interactive Thresholding 6" intensityRange setEditButton 1
+"Interactive Thresholding 6" intensityRange setIncrement 1.#INF
+"Interactive Thresholding 6" intensityRange setSubMinMax 0 0
+"Interactive Thresholding 6" colorMask setColor 0 0 0 1
+"Interactive Thresholding 6" applyTransformToResult 1
+"Interactive Thresholding 6" fire
+"Interactive Thresholding 6" setViewerMask 49150
+"Interactive Thresholding 6" setPickable 1
+
+set hideNewModules 0
+[ "Interactive Thresholding 6" doIt hit; "Interactive Thresholding 6" fire; "Interactive Thresholding 6" getResult
+ ] setLabel "convex1.thresholded"
+"convex1.thresholded" setIconPosition 20 617
+"convex1.thresholded" master connect "Interactive Thresholding 6"
+"convex1.thresholded" sharedColormap setDefaultColor 0.8 0.8 0.8
+"convex1.thresholded" sharedColormap setDefaultAlpha 0.500000
+"convex1.thresholded" sharedColormap setLocalRange 1
+"convex1.thresholded" sharedColormap setLocalMinMax 1.000000 8.000000
+"convex1.thresholded" sharedColormap enableAlpha 1
+"convex1.thresholded" sharedColormap enableAlphaToggle 1
+"convex1.thresholded" sharedColormap setAutoAdjustRangeMode 1
+"convex1.thresholded" sharedColormap setColorbarMinMax 1 8
+"convex1.thresholded" sharedColormap connect "labels.am"
+"convex1.thresholded" ImageData disconnect
+"convex1.thresholded" fire
+"convex1.thresholded" primary setIndex 0 0
+"convex1.thresholded" setTransform 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1
+"convex1.thresholded" fire
+"convex1.thresholded" setViewerMask 49151
+
+set hideNewModules 0
+create mask "Mask 2"
+"Mask 2" setIconPosition 193 617
+"Mask 2" setVar "CustomHelp" {mask.html}
+"Mask 2" interpretation setValue 0
+"Mask 2" outputLocation setIndex 0 0
+"Mask 2" inputImage connect "raw4.filtered.separate"
+"Mask 2" inputBinaryImage connect "convex1.thresholded"
+"Mask 2" applyTransformToResult 1
+"Mask 2" fire
+"Mask 2" setViewerMask 49151
+"Mask 2" setPickable 1
+
+set hideNewModules 0
+[ if { [ "Mask 2" getResult "ImgOut" ] == "" } { "Mask 2" doIt hit ; "Mask 2" fire } ; "Mask 2" getResult "ImgOut" ] setLabel "raw2.masked"
+"raw2.masked" setIconPosition 20 653
+"raw2.masked" master connect "Mask 2"
+"raw2.masked" sharedColormap setDefaultColor 0.8 0.8 0.8
+"raw2.masked" sharedColormap setDefaultAlpha 0.500000
+"raw2.masked" sharedColormap setLocalRange 1
+"raw2.masked" sharedColormap setLocalMinMax 1.000000 8.000000
+"raw2.masked" sharedColormap enableAlpha 1
+"raw2.masked" sharedColormap enableAlphaToggle 1
+"raw2.masked" sharedColormap setAutoAdjustRangeMode 1
+"raw2.masked" sharedColormap setColorbarMinMax 1 8
+"raw2.masked" sharedColormap connect "labels.am"
+"raw2.masked" ImageData disconnect
+"raw2.masked" fire
+"raw2.masked" primary setIndex 0 0
+"raw2.masked" setTransform 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1
+"raw2.masked" fire
+"raw2.masked" setViewerMask 49151
+
+set hideNewModules 0
+create subtractimage "Subtract Image"
+"Subtract Image" setIconPosition 160 653
+"Subtract Image" setVar "CustomHelp" {subtractimage.html}
+"Subtract Image" interpretation setValue 0
+"Subtract Image" outputLocation setIndex 0 0
+"Subtract Image" inputImage1 connect "raw2.masked"
+"Subtract Image" inputImage2 connect "raw4.masked"
+"Subtract Image" applyTransformToResult 1
+"Subtract Image" fire
+"Subtract Image" setViewerMask 49151
+"Subtract Image" setPickable 1
+
+set hideNewModules 0
+[ if { [ "Subtract Image" getResult "ImgOut" ] == "" } { "Subtract Image" doIt hit ; "Subtract Image" fire } ; "Subtract Image" getResult "ImgOut" ] setLabel "raw2.sub"
+"raw2.sub" setIconPosition 20 689
+"raw2.sub" master connect "Subtract Image"
+"raw2.sub" sharedColormap setDefaultColor 0.8 0.8 0.8
+"raw2.sub" sharedColormap setDefaultAlpha 0.500000
+"raw2.sub" sharedColormap setLocalRange 1
+"raw2.sub" sharedColormap setLocalMinMax 0.000000 1.000000
+"raw2.sub" sharedColormap enableAlpha 1
+"raw2.sub" sharedColormap enableAlphaToggle 1
+"raw2.sub" sharedColormap setAutoAdjustRangeMode 1
+"raw2.sub" sharedColormap setColorbarMinMax 0 135
+"raw2.sub" sharedColormap disconnect
+"raw2.sub" fire
+"raw2.sub" setTransform 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1
+"raw2.sub" fire
+"raw2.sub" setViewerMask 49151
+
+set hideNewModules 0
+create HxInteractiveThreshold "Interactive Thresholding 7"
+"Interactive Thresholding 7" setViewerMask 0
+"Interactive Thresholding 7" setIconPosition 160 689
+"Interactive Thresholding 7" setVar "CustomHelp" {HxInteractiveThreshold}
+set hideNewModules 0
+
+"Interactive Thresholding 7" data connect "raw2.sub"
+"Interactive Thresholding 7" mask disconnect
+"Interactive Thresholding 7" inputColorMap setDefaultColor 1 0.8 0.5
+"Interactive Thresholding 7" inputColorMap setDefaultAlpha 0.500000
+"Interactive Thresholding 7" inputColorMap setLocalRange 1
+"Interactive Thresholding 7" inputColorMap setLocalMinMax 0.000000 135.000000
+"Interactive Thresholding 7" inputColorMap enableAlpha 1
+"Interactive Thresholding 7" inputColorMap enableAlphaToggle 1
+"Interactive Thresholding 7" inputColorMap setAutoAdjustRangeMode 1
+"Interactive Thresholding 7" inputColorMap setColorbarMinMax 0 135
+"Interactive Thresholding 7" inputColorMap connect "grayScale.am"
+"Interactive Thresholding 7" fire
+"Interactive Thresholding 7" preview setValue 0 1
+"Interactive Thresholding 7" preview setToggleVisible 0 1
+"Interactive Thresholding 7" preview setValue 1 0
+"Interactive Thresholding 7" preview setToggleVisible 1 1
+"Interactive Thresholding 7" orientation setValue 0
+"Interactive Thresholding 7" sliceNumber setMinMax 0 391
+"Interactive Thresholding 7" sliceNumber setButtons 1
+"Interactive Thresholding 7" sliceNumber setEditButton 1
+"Interactive Thresholding 7" sliceNumber setIncrement 1
+"Interactive Thresholding 7" sliceNumber setValue 196
+"Interactive Thresholding 7" sliceNumber setSubMinMax 0 391
+"Interactive Thresholding 7" rendering setValue 1
+"Interactive Thresholding 7" intensityRange setMinMax -2147483648 2147483648
+"Interactive Thresholding 7" intensityRange setValues 1 1000
+"Interactive Thresholding 7" intensityRange setButtons 0
+"Interactive Thresholding 7" intensityRange setEditButton 1
+"Interactive Thresholding 7" intensityRange setIncrement 2.86331e+008
+"Interactive Thresholding 7" intensityRange setSubMinMax 0 0
+"Interactive Thresholding 7" colorMask setColor 0 0 0 1
+"Interactive Thresholding 7" applyTransformToResult 1
+"Interactive Thresholding 7" fire
+"Interactive Thresholding 7" setViewerMask 49150
+"Interactive Thresholding 7" setPickable 1
+
+set hideNewModules 0
+[ "Interactive Thresholding 7" doIt hit; "Interactive Thresholding 7" fire; "Interactive Thresholding 7" getResult
+ ] setLabel "raw6.thresholded"
+"raw6.thresholded" setIconPosition 20 725
+"raw6.thresholded" master connect "Interactive Thresholding 7"
+"raw6.thresholded" sharedColormap setDefaultColor 0.8 0.8 0.8
+"raw6.thresholded" sharedColormap setDefaultAlpha 0.500000
+"raw6.thresholded" sharedColormap setLocalRange 1
+"raw6.thresholded" sharedColormap setLocalMinMax 1.000000 8.000000
+"raw6.thresholded" sharedColormap enableAlpha 1
+"raw6.thresholded" sharedColormap enableAlphaToggle 1
+"raw6.thresholded" sharedColormap setAutoAdjustRangeMode 1
+"raw6.thresholded" sharedColormap setColorbarMinMax 1 8
+"raw6.thresholded" sharedColormap connect "labels.am"
+"raw6.thresholded" ImageData disconnect
+"raw6.thresholded" fire
+"raw6.thresholded" primary setIndex 0 0
+"raw6.thresholded" setTransform 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1
+"raw6.thresholded" fire
+"raw6.thresholded" setViewerMask 49151
+
+set hideNewModules 0
+create opening "Opening"
+"Opening" setIconPosition 179 725
+"Opening" setVar "CustomHelp" {opening}
+"Opening" Type setState {type Cube}
+"Opening" interpretation setValue 0
+"Opening" outputLocation setIndex 0 0
+"Opening" neighborhood setValue 2
+"Opening" inputImage connect "raw6.thresholded"
+"Opening" size setMinMax 0 0 2147483648
+"Opening" size setValue 0 2
+"Opening" applyTransformToResult 1
+"Opening" fire
+"Opening" setViewerMask 49151
+"Opening" setPickable 1
+
+set hideNewModules 0
+[ if { [ "Opening" getResult "ImgOut" ] == "" } { "Opening" doIt hit ; "Opening" fire } ; "Opening" getResult "ImgOut" ] setLabel "raw6.opening"
+"raw6.opening" setIconPosition 20 760
+"raw6.opening" master connect "Opening"
+"raw6.opening" sharedColormap setDefaultColor 0.8 0.8 0.8
+"raw6.opening" sharedColormap setDefaultAlpha 0.500000
+"raw6.opening" sharedColormap setLocalRange 1
+"raw6.opening" sharedColormap setLocalMinMax 1.000000 8.000000
+"raw6.opening" sharedColormap enableAlpha 1
+"raw6.opening" sharedColormap enableAlphaToggle 1
+"raw6.opening" sharedColormap setAutoAdjustRangeMode 1
+"raw6.opening" sharedColormap setColorbarMinMax 1 8
+"raw6.opening" sharedColormap connect "labels.am"
+"raw6.opening" ImageData disconnect
+"raw6.opening" fire
+"raw6.opening" primary setIndex 0 0
+"raw6.opening" setTransform 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1
+"raw6.opening" fire
+"raw6.opening" setViewerMask 49151
+
+set hideNewModules 0
+create mask "Mask 3"
+"Mask 3" setIconPosition 160 760
+"Mask 3" setVar "CustomHelp" {mask.html}
+"Mask 3" interpretation setValue 0
+"Mask 3" outputLocation setIndex 0 0
+"Mask 3" inputImage connect "raw4.filtered.separate"
+"Mask 3" inputBinaryImage connect "raw6.opening"
+"Mask 3" applyTransformToResult 1
+"Mask 3" fire
+"Mask 3" setViewerMask 49151
+"Mask 3" setPickable 1
+
+set hideNewModules 0
+[ if { [ "Mask 3" getResult "ImgOut" ] == "" } { "Mask 3" doIt hit ; "Mask 3" fire } ; "Mask 3" getResult "ImgOut" ] setLabel "raw3.masked"
+"raw3.masked" setIconPosition 20 796
+"raw3.masked" master connect "Mask 3"
+"raw3.masked" sharedColormap setDefaultColor 0.8 0.8 0.8
+"raw3.masked" sharedColormap setDefaultAlpha 0.500000
+"raw3.masked" sharedColormap setLocalRange 1
+"raw3.masked" sharedColormap setLocalMinMax 1.000000 8.000000
+"raw3.masked" sharedColormap enableAlpha 1
+"raw3.masked" sharedColormap enableAlphaToggle 1
+"raw3.masked" sharedColormap setAutoAdjustRangeMode 1
+"raw3.masked" sharedColormap setColorbarMinMax 1 8
+"raw3.masked" sharedColormap connect "labels.am"
+"raw3.masked" ImageData disconnect
+"raw3.masked" fire
+"raw3.masked" primary setIndex 0 0
+"raw3.masked" setTransform 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1
+"raw3.masked" fire
+"raw3.masked" setViewerMask 49151
+
+
+set hideNewModules 0
+create HxAnalyzeLabels "Label Analysis"
+"Label Analysis" setIconPosition 175 795
+"Label Analysis" setVar "CustomHelp" {HxAnalyzeLabels}
+"Label Analysis" data connect "raw4.masked"
+"Label Analysis" intensityImage disconnect
+"Label Analysis" fire
+"Label Analysis" interpretation setValue 0
+"Label Analysis" sequenceMode setValue 0
+labelMeasure setAttributes feret2d 0 18 36 54 72 90 108 126 144 162
+labelMeasure setAttributes feret3d 31
+labelMeasure setAttributes cooccurrence 0 0
+labelMeasure setAttributes histogram 1 0 255 1
+labelMeasure setAttributes quantile 0.1 0.1 0.1 0.1 0.1 0.1
+labelMeasure setAttributes breadth3d 10
+"Label Analysis" measures setState {"basic" Volume3d Area3d BaryCenterX BaryCenterY BaryCenterZ Mean}
+"Label Analysis" showAnalysis setValue 0 1
+"Label Analysis" showAnalysis setToggleVisible 0 1
+"Label Analysis" applyTransformToResult 1
+"Label Analysis" fire
+"Label Analysis" setViewerMask 49151
+"Label Analysis" setPickable 1
+
+set hideNewModules 0
+[ if { [ "Label Analysis" getResult "AnlOut" ] == "" } { "Label Analysis" doIt hit ; "Label Analysis" fire } ; "Label Analysis" getResult "AnlOut" ] setLabel "raw4.Label-Analysis"
+"raw4.Label-Analysis" setIconPosition 20 832
+"raw4.Label-Analysis" master connect "Label Analysis"
+"raw4.Label-Analysis" fire
+"raw4.Label-Analysis" fire
+"raw4.Label-Analysis" setViewerMask 49151
+"raw4.Label-Analysis" select
+
+set hideNewModules 0
+create HxAnalyzeLabels "Label Analysis 2"
+"Label Analysis 2" setIconPosition 181 826
+"Label Analysis 2" setVar "CustomHelp" {HxAnalyzeLabels}
+"Label Analysis 2" data connect "raw3.masked"
+"Label Analysis 2" intensityImage disconnect
+"Label Analysis 2" fire
+"Label Analysis 2" interpretation setValue 0
+"Label Analysis 2" sequenceMode setValue 0
+labelMeasure setAttributes feret2d 0 18 36 54 72 90 108 126 144 162
+labelMeasure setAttributes feret3d 31
+labelMeasure setAttributes cooccurrence 0 0
+labelMeasure setAttributes histogram 1 0 255 1
+labelMeasure setAttributes quantile 0.1 0.1 0.1 0.1 0.1 0.1
+labelMeasure setAttributes breadth3d 10
+"Label Analysis 2" measures setState {"basic" Volume3d Area3d BaryCenterX BaryCenterY BaryCenterZ Mean}
+"Label Analysis 2" showAnalysis setValue 0 1
+"Label Analysis 2" showAnalysis setToggleVisible 0 1
+"Label Analysis 2" applyTransformToResult 1
+"Label Analysis 2" fire
+"Label Analysis 2" setViewerMask 49151
+"Label Analysis 2" setPickable 1
+
+set hideNewModules 0
+[ if { [ "Label Analysis 2" getResult "AnlOut" ] == "" } { "Label Analysis 2" doIt hit ; "Label Analysis 2" fire } ; "Label Analysis 2" getResult "AnlOut" ] setLabel "raw3.Label-Analysis-2"
+"raw3.Label-Analysis-2" setIconPosition 19 866
+"raw3.Label-Analysis-2" master connect "Label Analysis 2"
+"raw3.Label-Analysis-2" fire
+"raw3.Label-Analysis-2" fire
+"raw3.Label-Analysis-2" setViewerMask 49151
+
+
+
+}

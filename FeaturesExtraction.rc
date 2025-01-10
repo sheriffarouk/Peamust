@@ -1,0 +1,20 @@
+######################################
+# FeaturesExtraction
+######################################
+
+module -name "FeaturesExtraction" \
+        -package "hxscriptobj" \
+        -primary HxScalarField3 \
+        -icon "TVDefScriptObject" \
+        -category "{Image Segmentation}" \
+        -check {[ $PRIMARY getTypeId ] != "HxUniformLabelField3"} \
+		-customHelp "FeaturesExtraction.html" \
+        -proc {
+            set this [[create HxScriptObject] setLabel "FeaturesExtraction"]
+            $this script setValue $AMIRA_ROOT/share/script-objects/FeaturesExtraction.scro
+            if { [exists $PRIMARY] } {
+                $this setVar reconstructedFromNetwork 0
+                $this data connect $PRIMARY
+                $this fire
+            }
+}
